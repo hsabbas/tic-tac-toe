@@ -1,68 +1,70 @@
 const gameBoard = () => {
-    let board = [
-        ['', '', ''],
-        ['', '', ''],
-        ['', '', '']
-    ];
+    let board = ['', '', '', '', '', '', '', '', ''];
 
-    function getSymbolInSpace(x, y){
-        return board[x][y];
-    }
-    
-    function addPlayerMove(playerSymbol, x, y){
-        board[x][y] = playerSymbol;
+    function getSymbolInSpace(i){
+        return board[i];
     }
 
-    function isOccupied(x, y){
-        return !(board[x][y] === '');
+    function getBoardArray(){
+        return board;
+    }
+
+    function setBoardArray(boardArray){
+        board = boardArray;
+    }
+
+    function addPlayerMove(playerSymbol, i){
+        board[i] = playerSymbol;
+    }
+
+    function isOccupied(i){
+        return !(board[i] === '');
     }
 
     function isFull(){
-        for(let i = 0; i <3; i++){
-            if(board[i].includes('')){
-                return false;
-            }
+        if(board.includes('')){
+            return false;
         }
         return true;
     }
 
     function checkThreeInARow(){
-        if(board[0][0] !== ''){
-            if(board[0][0] == board[0][1] && board[0][0] == board[0][2]){
-                return board[0][0];
+        if(board[0] !== ''){
+            if(board[0] == board[1] && board[0] == board[2]){
+                return board[0];
             }
 
-            if(board[0][0] == board[1][0] && board[0][0] == board[2][0]){
-                return board[0][0];
+            if(board[0] == board[3] && board[0] == board[6]){
+                return board[0];
             }
 
-            if(board[0][0] == board[1][1] && board[0][0] == board[2][2]){
-                return board[0][0];
+            if(board[0] == board[4] && board[0] == board[8]){
+                return board[0];
             }
         }
 
-        if(board[1][1] !== ''){
-            if(board[1][0] == board[1][1] && board[1][0] == board[1][2]){
-                return board[1][1];
+        if(board[4] !== ''){
+            if(board[4] == board[1] && board[4] == board[7]){
+                return board[4];
             }
 
-            if(board[0][1] == board[1][1] && board[0][1] == board[2][1]){
-                return board[1][1];
+            if(board[4] == board[3] && board[4] == board[5]){
+                return board[4];
             }
 
-            if(board[2][0] == board[1][1] && board[0][0] == board[0][2]){
-                return board[1][1];
+            if(board[4] == board[6] && board[4] == board[2]){
+                return board[4];
             }
         }
 
-        if(board[2][2] !== ''){
-            if(board[2][0] == board[2][1] && board[2][0] == board[2][2]){
-                return board[2][2];
+        if(board[8] !== ''){
+            if(board[8] == board[6] && board[8] == board[7]){
+                return board[8];
             }
     
     
-            if(board[0][2] == board[1][2] && board[0][2] == board[2][2]){
-                return board[2][2];
+            if(board[8] == board[2] && board[8] == board[5]){
+                return board[8];
             }
         }
 
@@ -70,14 +72,12 @@ const gameBoard = () => {
     }
 
     function reset(){
-        board = [
-            ['', '', ''],
-            ['', '', ''],
-            ['', '', '']
-        ];
+        board = ['', '', '', '', '', '', '', '', ''];
     }
 
     return {
+        setBoardArray,
+        getBoardArray,
         getSymbolInSpace,
         addPlayerMove,
         isOccupied,
@@ -87,25 +87,26 @@ const gameBoard = () => {
     }
 };
 
-const TicTacToe = () =>{
+const TicTacToe = (board) =>{
     const playerOne = 'X';
     const playerTwo = 'O';
     let currentPlayer = playerOne;
     let winner = 'none';
-    const board = gameBoard();
 
-    function playerMove(x, y){
-        if(!board.isOccupied(x, y)){
-            board.addPlayerMove(currentPlayer, x, y);
+    function playerMove(i){
+        board.addPlayerMove(currentPlayer, i);
 
-            if(currentPlayer == playerOne){
-                currentPlayer = playerTwo;
-            } else {
-                currentPlayer = playerOne;
-            }
+        if(currentPlayer == playerOne){
+            currentPlayer = playerTwo;
+            return playerOne;
+        } else {
+            currentPlayer = playerOne;
+            return playerTwo;
         }
+    }
 
-        return board.getSymbolInSpace(x, y)
+    function isValidMove(i){
+        return !board.isOccupied(i);
     }
 
     function getWinner(){
@@ -125,24 +126,110 @@ const TicTacToe = () =>{
     }
 
     return {
+        isValidMove,
         playerMove,
         getWinner,
         reset
     }
 };
 
+const Computer = () => {
+    function evaluate(board){
+        let score = 0;
+        let winner = board.checkThreeInARow();
+        if(winner == 'X') {
+            score = -10;
+        } else if (winner == 'O'){
+            score = 10;
+        }
+        return score;
+    }
+
+    function minmax(board, isMax){
+        let score = evaluate(board);
+
+        if(score == 10 || score == -10){
+            return score;
+        }
+
+        if(board.isFull()){
+            return 0;
+        }
+
+        if(isMax){
+            let best = -100;
+            for(let i = 0; i < 9; i++){
+                if(!board.isOccupied(i)){
+                    board.addPlayerMove('O', i);
+                    best = Math.max(best, minmax(board, !isMax));
+                    board.addPlayerMove('', i);
+                }
+            }
+            return best;
+        } else {
+            let best = 100;
+            for(let i = 0; i < 9; i++){
+                if(!board.isOccupied(i)){
+                    board.addPlayerMove('O', i);
+                    best = Math.min(best, minmax(board, !isMax));
+                    board.addPlayerMove('', i);
+                }
+            }
+            return best;
+        }
+    }
+
+    function findBestMove(board){
+        let bestVal = -100;
+        let bestMove = -1;
+
+        for(let i = 0; i < 9; i++){
+            if(!board.isOccupied(i)){
+                board.addPlayerMove('O', i);
+                moveVal = minmax(board, false);
+                board.addPlayerMove('', i);
+
+                if(moveVal > bestVal){
+                    bestMove = i;
+                }
+            }
+        }
+
+        return bestMove;
+    }
+
+    return {
+        findBestMove
+    }
+}
+
 const displayController = (() => {
+    const twoPlayerButton = document.getElementById('two-player');
+    const computerButton = document.getElementById('vs-computer');
+    const startScreen = document.getElementById('start-screen');
     const gameGrid = document.getElementsByClassName("cells");
     const gameOverScreen = document.getElementById("game-over-screen");
     const gameOverMsgDisplay = document.getElementById("game-over-msg");
     const resetButton = document.getElementById("reset-btn");
-    const game = TicTacToe();
+    const board = gameBoard();
+    const computer = Computer();
+    const game = TicTacToe(board);
+    let computerPlaying = false;
     
     function cellClicked(index){
-        const x = getRow(index);
-        const y = getCol(index);
-        gameGrid[index].innerText = game.playerMove(x, y);
-        checkForWinner();
+        if(game.isValidMove(index)){
+            gameGrid[index].innerText = game.playerMove(index);
+            checkForWinner();
+
+            if(computerPlaying && board.getSymbolInSpace(index) =="X"){
+                computerMove();
+            }
+        }
+    }
+
+    function computerMove(){
+        let move = computer.findBestMove(board);
+        gameGrid[move].click();
     }
 
     function checkForWinner(){
@@ -160,27 +247,16 @@ const displayController = (() => {
 
     function reset(){
         gameOverScreen.style.display = "none";
+        startScreen.style.display = "block";
+        computerPlaying = false;
         resetGameDisplay();
         game.reset();
     }
 
     function resetGameDisplay(){
-        for(cell in gameGrid){
-            cell.innerText = '';
+        for(let i = 0; i < 9; i++){
+            gameGrid[i].innerText = '';
         }
-    }
-
-    function getRow(i){
-        return parseInt(i / 3);
-    }
-
-    function getCol(i){
-        if(i <3 /*u*/){
-            return i;
-        } else if(i < 6){
-            return i - 3;
-        }
-        return i - 6;
     }
 
     function getGameOverMsg(winner){
@@ -199,7 +275,18 @@ const displayController = (() => {
                 cellClicked(i);
             })
         }
+
+        twoPlayerButton.addEventListener("click", removeStartScreen)
+        computerButton.addEventListener("click", function(){
+            computerPlaying = true;
+            removeStartScreen();
+        })
+
         resetButton.addEventListener("click", reset);
+    }
+
+    function removeStartScreen(){
+        startScreen.style.display = 'none';
     }
 
     return {
