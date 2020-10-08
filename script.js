@@ -1,9 +1,13 @@
-const gameBoard = (() => {
+const gameBoard = () => {
     let board = [
         ['', '', ''],
         ['', '', ''],
         ['', '', '']
     ];
+
+    function getSymbolInSpace(x, y){
+        return board[x][y];
+    }
     
     function addPlayerMove(playerSymbol, x, y){
         board[x][y] = playerSymbol;
@@ -60,17 +64,71 @@ const gameBoard = (() => {
         return false;
     }
 
+    function reset(){
+        board = [
+            ['', '', ''],
+            ['', '', ''],
+            ['', '', '']
+        ];
+    }
+
     return {
         addPlayerMove,
         isOccupied,
         isFull,
-        threeInARow
+        threeInARow,
+        reset
     }
-})();
+};
+
+const TicTacToe = () =>{
+    const playerOne = 'X';
+    const playerTwo = 'O';
+    let currentPlayer = playerOne;
+    let winner = 'none';
+    const board = gameBoard();
+
+    function playerMove(x, y){
+        if(!board.isOccupied(x, y)){
+            board.addPlayerMove(currentPlayer, x, y);
+        }
+
+        if(currentPlayer == playerOne){
+            currentPlayer = playerTwo;
+        } else {
+            currentPlayer = playerOne;
+        }
+
+        return board.getSymbolInSpace(x, y)
+    }
+
+    function getWinner(){
+        if(board.threeInARow()){
+            winner = currentPlayer;
+        } else if(board.isFull){
+            winner = 'draw';
+        }
+        return winner;
+    }
+
+    function reset(){
+        currentPlayer = playerOne;
+        winner = 'none';
+        board.reset();
+    }
+
+    return {
+        playerMove,
+        getWinner,
+        reset
+    }
+};
 
 const displayController = (() => {
-    const board = document.getElementById('board');
-    function generateBoard(){
-
+    const gameGrid = document.getElementsByClassName("cells");
+    const game = TicTacToe();
+    
+    function playerMove(x, y){
+        gameGrid[x][y].innerText = game.playerMove(x, y);
     }
 })();
