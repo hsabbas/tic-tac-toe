@@ -138,18 +138,18 @@ const Computer = () => {
         let score = 0;
         let winner = board.checkThreeInARow();
         if(winner == 'X') {
-            score = -10;
+            score = -100;
         } else if (winner == 'O'){
-            score = 10;
+            score = 100;
         }
         return score;
     }
 
-    function minmax(board, isMax){
+    function minimax(board, depth, isMax){
         let score = evaluate(board);
 
-        if(score == 10 || score == -10){
-            return score;
+        if(score == 100 || score == -100){
+            return score - depth;
         }
 
         if(board.isFull()){
@@ -161,7 +161,7 @@ const Computer = () => {
             for(let i = 0; i < 9; i++){
                 if(!board.isOccupied(i)){
                     board.addPlayerMove('O', i);
-                    best = Math.max(best, minmax(board, !isMax));
+                    best = Math.max(best, minimax(board, depth + 1, !isMax));
                     board.addPlayerMove('', i);
                 }
             }
@@ -170,8 +170,8 @@ const Computer = () => {
             let best = 100;
             for(let i = 0; i < 9; i++){
                 if(!board.isOccupied(i)){
-                    board.addPlayerMove('O', i);
-                    best = Math.min(best, minmax(board, !isMax));
+                    board.addPlayerMove('X', i);
+                    best = Math.min(best, minimax(board, depth + 1, !isMax));
                     board.addPlayerMove('', i);
                 }
             }
@@ -186,7 +186,7 @@ const Computer = () => {
         for(let i = 0; i < 9; i++){
             if(!board.isOccupied(i)){
                 board.addPlayerMove('O', i);
-                moveVal = minmax(board, false);
+                moveVal = minimax(board, false);
                 board.addPlayerMove('', i);
 
                 if(moveVal > bestVal){
@@ -219,10 +219,11 @@ const displayController = (() => {
     function cellClicked(index){
         if(game.isValidMove(index)){
             gameGrid[index].innerText = game.playerMove(index);
-            checkForWinner();
 
-            if(computerPlaying && board.getSymbolInSpace(index) =="X"){
-                computerMove();
+            if(!checkForWinner()){
+                if(computerPlaying && board.getSymbolInSpace(index) =="X"){
+                    computerMove();
+                }
             }
         }
     }
@@ -235,9 +236,10 @@ const displayController = (() => {
     function checkForWinner(){
         winner = game.getWinner();
         if(winner == 'none'){
-            return;
+            return false;
         }
         gameOver(winner);
+        return true;
     }
 
     function gameOver(winner){
