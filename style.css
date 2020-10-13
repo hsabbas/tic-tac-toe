@@ -9,7 +9,16 @@
     grid-gap: 2px;
 }
 
+#heading{
+    margin-top: 50px;
+    text-align: center;
+}
+
 .cells{
+    font-size: 70px;
+    line-height: 130px;
+    text-align: center;
+    vertical-align: middle;
     background-color: white;
 }
 
@@ -27,7 +36,7 @@
 #start-menu{
     width: 20%;
     height: 200px;
-    margin: 150px auto;
+    margin: 100px auto;
     padding: 15px;
     border: 1px solid black;
     border-radius: 12px;
